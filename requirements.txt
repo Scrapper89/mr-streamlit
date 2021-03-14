@@ -1,0 +1,12 @@
+backtrader==1.9.76.123
+requests==2.25.1
+pandas_datareader==0.9.0
+pandas==1.2.2
+numpy==1.19.2
+plotly==4.14.3
+pytz==2021.1
+matplotlib==3.3.4
+streamlit==0.78.0
+fbprophet==0.7.1
+scikit_optimize==0.8.1
+beautifulsoup4==4.9.3
