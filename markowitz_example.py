@@ -38,7 +38,7 @@ def get_data(choice):
     if choice == 'Stocks':
         tickers = ['^DJI', 'TSLA', 'AAPL', 'JPM','DAX']
     elif choice == 'ETF':
-        tickers = ['LOCK.UK', 'RBTX.UK', 'DGIT.UK', 'ECAR.UK', 'IH2O.UK', 'DRDR.UK']
+        tickers = ['LOCK.UK', 'INRG.UK', 'DGTL.UK', 'ECAR.UK', 'IQQQ.DE', 'HEAL.UK','2B76.DE']
     elif choice == 'BTC':
         tickers = ['BTC','XRP','LTC','ETH'] # 'BTC.V', 'XRP.V' 'DOGE'
         cwd = os.getcwd()
