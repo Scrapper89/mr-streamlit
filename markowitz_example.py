@@ -7,11 +7,6 @@ import pandas_datareader.stooq as stooq
 import skopt
 import os
 
-import cvxopt as opt
-from cvxopt import blas, solvers
-# Turn off progress printing
-solvers.options['show_progress'] = False
-
 np.random.seed(123)
 pd.options.display.width = 0
 gen = skopt.sampler.sobol.Sobol()
@@ -89,6 +84,11 @@ def random_portfolio(return_vec):
     return mu, sigma
 
 def optimal_portfolio(return_vec):
+    import cvxopt as opt
+    from cvxopt import blas, solvers
+    # Turn off progress printing
+    solvers.options['show_progress'] = False
+
     n = len(return_vec)
     returns = np.asmatrix(return_vec)
 
