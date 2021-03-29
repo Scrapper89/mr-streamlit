@@ -39,19 +39,35 @@ def random_portfolio_mean_std(return_vec, nsamples):
     sigma = list( np.sqrt(np.diagonal(w * C * w.T)) )
     return mu, sigma
 
-# def quadprog_solve_qp(P, q, G=None, h=None, A=None, b=None):
-#     import quadprog
-#     qp_G = .5 * (P + P.T)   # make sure P is symmetric
-#     qp_a = -q
-#     if A is not None:
-#         qp_C = -np.vstack([A, G]).T
-#         qp_b = -np.hstack([b, h])
-#         meq = A.shape[0]
-#     else:  # no equality constraint
-#         qp_C = -G.T
-#         qp_b = -h
-#         meq = 0
-#     return quadprog.solve_qp(qp_G, qp_a, qp_C, qp_b, meq)[0]
+# solvers.qp(S*mu, -pbar, G, h, A, b)
+#  (P, q, G, h, A, b)
+# P = S*my, q = -pbar, G
+def cvxopt_solve_qp(P, q, G=None, h=None, A=None, b=None):
+    import cvxopt
+    P = .5 * (P + P.T)  # make sure P is symmetric
+    args = [cvxopt.matrix(P), cvxopt.matrix(q)]
+    if G is not None:
+        args.extend([cvxopt.matrix(G), cvxopt.matrix(h)])
+        if A is not None:
+            args.extend([cvxopt.matrix(A), cvxopt.matrix(b)])
+    sol = cvxopt.solvers.qp(*args)
+    if 'optimal' not in sol['status']:
+        return None
+    return np.array(sol['x']).reshape((P.shape[1],))
+
+def quadprog_solve_qp(P, q, G=None, h=None, A=None, b=None):
+    import quadprog
+    qp_G = .5 * (P + P.T)   # make sure P is symmetric
+    qp_a = -q
+    if A is not None:
+        qp_C = -np.vstack([A, G]).T
+        qp_b = -np.vstack([b, h]) # hstack
+        meq = A.shape[0]
+    else:  # no equality constraint
+        qp_C = -G.T
+        qp_b = -h
+        meq = 0
+    return quadprog.solve_qp(qp_G, np.squeeze(np.asarray(qp_a)), qp_C, np.squeeze(np.asarray(qp_b)), meq)[0]
 
 def optimal_portfolio(return_vec, N = 1000):
     import cvxopt as opt
@@ -62,13 +78,18 @@ def optimal_portfolio(return_vec, N = 1000):
     n = len(return_vec)
     log_returns = np.asmatrix(return_vec)
 
-    #min_max_return = np.round( max( [np.abs(np.max(log_returns)), np.abs(np.min(log_returns))]), 2)
-    #mus = [ np.round(t/N*min_max_return,4) for t in range(1,N+1)]
     mus = [10 ** (5.0 * t / N - 2.0) for t in range(N)]
 
     # Convert to cvxopt matrices
+    _S = np.cov(log_returns)
+    _pbar = np.mean(log_returns, axis=1)
     S = opt.matrix(np.cov(log_returns))
     pbar = opt.matrix(np.mean(log_returns, axis=1))
+    #
+    _G = -np.eye(n)
+    _h = np.zeros((n,1))
+    _A = np.ones((1,n))
+    _b = np.ones((1,1))
 
     # Create constraint matrices
     G = -opt.matrix(np.eye(n))  # negative n x n identity matrix
